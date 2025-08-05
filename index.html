@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uber Ride Logger</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .message-box {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background-color: #fff; padding: 20px; border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000;
+            text-align: center; font-family: 'Inter', sans-serif;
+            max-width: 300px;
+        }
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); display: flex;
+            justify-content: center; align-items: center; z-index: 1001;
+            color: white; font-size: 1.5rem;
+        }
+        input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
+            border: 1px solid #cbd5e0;
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-left: 0.5rem;
+        }
+        .data-section {
+            transition: all 0.3s ease-in-out;
+            opacity: 1;
+            max-height: 1000px; /* Large enough to show content */
+            overflow: hidden;
+            padding-top: 1.5rem; /* Default padding */
+            padding-bottom: 1.5rem; /* Default padding */
+        }
+        .data-section.hidden-section {
+            opacity: 0;
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        .data-section.disabled-fields {
+            pointer-events: none; /* Disable interaction */
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
+        <h1 class="text-4xl font-extrabold text-slate-800 text-center mb-6">
+            Uber Ride Logger
+        </h1>
+        <p class="text-center text-slate-600 mb-8">
+            Log details for accepted and completed Uber rides.
+        </p>
+
+        <!-- Section 1: Ride Details -->
+        <div id="rideDetailsSection" class="mb-6 bg-slate-50 p-6 rounded-xl shadow-inner data-section">
+            <h2 class="text-2xl font-bold text-slate-700 mb-4">Ride Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="inputDate" class="block text-slate-700 text-sm font-semibold mb-1">Date</label>
+                    <input type="date" id="inputDate" class="focus:ring-teal-500 focus:border-teal-500">
+                </div>
+                <div>
+                    <label for="inputStartTime" class="block text-slate-700 text-sm font-semibold mb-1">Ride Start Time (approx.)</label>
+                    <input type="time" id="inputStartTime" class="focus:ring-teal-500 focus:border-teal-500">
+                </div>
+                <div>
+                    <label for="inputDayOfWeek" class="block text-slate-700 text-sm font-semibold mb-1">Day of Week</label>
+                    <select id="inputDayOfWeek" class="focus:ring-teal-500 focus:border-teal-500">
+                        <option value="">Auto-Detect or Select</option>
+                        <option value="Sunday">Sunday</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex items-center mb-4">
+                <input type="checkbox" id="inputPublicHoliday" class="mr-2 text-teal-600 focus:ring-teal-500 rounded">
+                <label for="inputPublicHoliday" class="text-slate-700 text-sm font-semibold">Public Holiday?</label>
+            </div>
+            <div class="mb-4">
+                <label for="inputSpecialEvent" class="block text-slate-700 text-sm font-semibold mb-1">Special Event (e.g., Concert, Game)</label>
+                <input type="text" id="inputSpecialEvent" class="focus:ring-teal-500 focus:border-teal-500" placeholder="Any major event happening?">
+            </div>
+        </div>
+
+        <!-- Section 2: Accepted Ride Details -->
+        <div id="acceptedRideSection" class="mb-6 bg-slate-50 p-6 rounded-xl shadow-inner data-section">
+            <h2 class="text-2xl font-bold text-slate-700 mb-4">Accepted Ride Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="acceptedUpfrontFare" class="block text-slate-700 text-sm font-semibold mb-1">Upfront Fare ($)</label>
+                    <input type="number" id="acceptedUpfrontFare" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 55.75" step="0.01">
+                </div>
+                <div>
+                    <label for="acceptedEstTime" class="block text-slate-700 text-sm font-semibold mb-1">Estimated Time (min)</label>
+                    <input type="number" id="acceptedEstTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 15" step="1">
+                </div>
+                <div>
+                    <label for="acceptedPickupLocation" class="block text-slate-700 text-sm font-semibold mb-1">Pickup Location</label>
+                    <input type="text" id="acceptedPickupLocation" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., Roma Norte">
+                </div>
+                <div>
+                    <label for="acceptedEndLocation" class="block text-slate-700 text-sm font-semibold mb-1">End Location</label>
+                    <input type="text" id="acceptedEndLocation" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., Polanco">
+                </div>
+            </div>
+            <button id="confirmAcceptedBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md transform hover:scale-105">
+                Confirm Accepted Ride Details
+            </button>
+        </div>
+
+        <!-- Section 3: Completed Ride Details -->
+        <div id="completedRideSection" class="mb-6 bg-slate-50 p-6 rounded-xl shadow-inner data-section hidden-section disabled-fields">
+            <h2 class="text-2xl font-bold text-slate-700 mb-4">Completed Ride Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="realizedFare" class="block text-slate-700 text-sm font-semibold mb-1">Realized Fare ($)</label>
+                    <input type="number" id="realizedFare" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 50.25" step="0.01">
+                </div>
+                <div>
+                    <label for="realizedTime" class="block text-slate-700 text-sm font-semibold mb-1">Realized Time (min)</label>
+                    <input type="number" id="realizedTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 12" step="1">
+                </div>
+                <div class="flex items-center col-span-full">
+                    <input type="checkbox" id="passengerSeatbelt" class="mr-2 text-teal-600 focus:ring-teal-500 rounded">
+                    <label for="passengerSeatbelt" class="text-slate-700 text-sm font-semibold">Passenger Fastened Seatbelt?</label>
+                </div>
+            </div>
+            <button id="submitDataBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md transform hover:scale-105">
+                Submit All Data to Google Sheet
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL FOR ACCEPTED/COMPLETED RIDES
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxquGSCQqgIKL-BwaQf-gt6zvfPIrn2g0tAEL4mWtBHOk-OZy54wLn9R_FCAtbW-yg9cw/exec'; 
+
+        // UI Elements
+        const submitDataBtn = document.getElementById('submitDataBtn');
+        const confirmAcceptedBtn = document.getElementById('confirmAcceptedBtn');
+
+        // Input Fields (Ride Details)
+        const inputDate = document.getElementById('inputDate');
+        const inputStartTime = document.getElementById('inputStartTime');
+        const inputDayOfWeek = document.getElementById('inputDayOfWeek');
+        const inputPublicHoliday = document.getElementById('inputPublicHoliday');
+        const inputSpecialEvent = document.getElementById('inputSpecialEvent');
+        
+        // Input Fields (Accepted Ride Details)
+        const acceptedUpfrontFare = document.getElementById('acceptedUpfrontFare');
+        const acceptedEstTime = document.getElementById('acceptedEstTime');
+        const acceptedPickupLocation = document.getElementById('acceptedPickupLocation');
+        const acceptedEndLocation = document.getElementById('acceptedEndLocation');
+
+        // Input Fields (Completed Ride Details)
+        const realizedFare = document.getElementById('realizedFare');
+        const realizedTime = document.getElementById('realizedTime');
+        const passengerSeatbelt = document.getElementById('passengerSeatbelt');
+
+        // Sections
+        const acceptedRideSection = document.getElementById('acceptedRideSection');
+        const completedRideSection = document.getElementById('completedRideSection');
+
+        // Data to be submitted (stored temporarily)
+        let submissionData = {};
+
+        // --- Initial Setup ---
+        // Set today's date and current time by default
+        inputDate.valueAsDate = new Date();
+        inputStartTime.value = new Date().toTimeString().substring(0, 5); // HH:MM
+        inputDayOfWeek.value = new Date().toLocaleString('en-us', { weekday: 'long' });
+
+        // Initial UI State
+        setUIState('initial');
+
+        // --- Helper Functions ---
+        function setUIState(state) {
+            // Disable all buttons initially
+            confirmAcceptedBtn.disabled = true;
+            submitDataBtn.disabled = true;
+
+            // Hide/disable sections
+            acceptedRideSection.classList.remove('disabled-fields'); // Always enabled initially for this app
+            completedRideSection.classList.add('hidden-section', 'disabled-fields');
+
+            switch (state) {
+                case 'initial':
+                    confirmAcceptedBtn.disabled = false; // Enable confirm button
+                    break;
+                case 'accepted_details_confirmed':
+                    acceptedRideSection.classList.add('disabled-fields');
+                    completedRideSection.classList.remove('hidden-section');
+                    completedRideSection.classList.remove('disabled-fields');
+                    submitDataBtn.disabled = false;
+                    break;
+                case 'submitted': // After successful submission, reset to initial
+                    setUIState('initial');
+                    break;
+            }
+        }
+
+        // --- Event Listeners ---
+        confirmAcceptedBtn.addEventListener('click', () => {
+            const upfrontFare = acceptedUpfrontFare.value;
+            const estTime = acceptedEstTime.value;
+            const pickupLoc = acceptedPickupLocation.value;
+            const endLoc = acceptedEndLocation.value;
+
+            if (!upfrontFare || !estTime || !pickupLoc || !endLoc) {
+                showMessage('Please fill in all Accepted Ride Details.', 'error');
+                return;
+            }
+
+            // Store accepted ride details
+            submissionData.acceptedUpfrontFare = upfrontFare;
+            submissionData.acceptedEstTime = estTime;
+            submissionData.pickupLocation = pickupLoc;
+            submissionData.endLocation = endLoc;
+
+            setUIState('accepted_details_confirmed');
+        });
+
+        submitDataBtn.addEventListener('click', async () => {
+            const date = inputDate.value;
+            const startTime = inputStartTime.value;
+            const dayOfWeek = inputDayOfWeek.value;
+            const publicHoliday = inputPublicHoliday.checked ? 'Yes' : 'No';
+            const specialEvent = inputSpecialEvent.value.trim();
+            const realizedFareValue = realizedFare.value;
+            const realizedTimeValue = realizedTime.value;
+            const passengerSeatbeltValue = passengerSeatbelt.checked ? 'Yes' : 'No';
+
+            // Validation for completed ride details
+            if (!realizedFareValue || !realizedTimeValue) {
+                showMessage('Please fill in Realized Fare and Realized Time for the completed ride.', 'error');
+                return;
+            }
+
+            if (WEB_APP_URL === 'YOUR_ACCEPTED_RIDES_APPS_SCRIPT_URL_HERE' || !WEB_APP_URL.startsWith('https://script.google.com/macros/s/')) {
+                showMessage('Please replace "YOUR_ACCEPTED_RIDES_APPS_SCRIPT_URL_HERE" in the HTML code with your actual deployed Google Apps Script Web App URL.', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('date', date);
+            formData.append('startTime', startTime);
+            formData.append('dayOfWeek', dayOfWeek);
+            
+            // Append accepted ride details (from submissionData)
+            formData.append('acceptedUpfrontFare', submissionData.acceptedUpfrontFare);
+            formData.append('acceptedEstTime', submissionData.acceptedEstTime);
+            formData.append('pickupLocation', submissionData.pickupLocation);
+            formData.append('endLocation', submissionData.endLocation);
+
+            // Append completed ride details
+            formData.append('realizedFare', realizedFareValue);
+            formData.append('realizedTime', realizedTimeValue);
+            formData.append('passengerSeatbelt', passengerSeatbeltValue);
+
+            formData.append('publicHoliday', publicHoliday);
+            formData.append('specialEvent', specialEvent);
+
+            showLoading('Submitting ride data...');
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('Ride data submitted successfully!', 'success');
+                    // Reset all input fields for a new entry
+                    inputDate.valueAsDate = new Date();
+                    inputStartTime.value = new Date().toTimeString().substring(0, 5);
+                    inputDayOfWeek.value = new Date().toLocaleString('en-us', { weekday: 'long' });
+                    inputPublicHoliday.checked = false;
+                    inputSpecialEvent.value = '';
+                    acceptedUpfrontFare.value = '';
+                    acceptedEstTime.value = '';
+                    acceptedPickupLocation.value = '';
+                    acceptedEndLocation.value = '';
+                    realizedFare.value = '';
+                    realizedTime.value = '';
+                    passengerSeatbelt.checked = false;
+                    submissionData = {}; // Clear stored data
+                    setUIState('initial'); // Reset UI to initial state
+                } else {
+                    showMessage(`Error submitting data: ${result.message}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Network error: ${error.message}. Check console for details.`, 'error');
+                console.error('Fetch error:', error);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Custom message box for iFrame compatibility and better UX
+        function showMessage(message, type = 'info') {
+            const existingBox = document.querySelector('.message-box');
+            if (existingBox) existingBox.remove();
+
+            const alertBox = document.createElement('div');
+            alertBox.className = 'message-box';
+            let bgColor = 'bg-teal-100';
+            let textColor = 'text-teal-800';
+            if (type === 'error') {
+                bgColor = 'bg-red-100';
+                textColor = 'text-red-800';
+            } else if (type === 'success') {
+                bgColor = 'bg-green-100';
+                textColor = 'text-green-800';
+            }
+
+            alertBox.innerHTML = `
+                <div class="${bgColor} ${textColor} p-4 rounded-lg mb-4">
+                    <p class="text-lg">${message}</p>
+                </div>
+                <button class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-md" onclick="this.parentNode.remove()">
+                    OK
+                </button>
+            `;
+            document.body.appendChild(alertBox);
+        }
+
+        let loadingOverlay = null;
+        function showLoading(message) {
+            if (!loadingOverlay) {
+                loadingOverlay = document.createElement('div');
+                loadingOverlay.className = 'loading-overlay';
+                document.body.appendChild(loadingOverlay);
+            }
+            loadingOverlay.innerHTML = `<p>${message}</p>`;
+            loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
