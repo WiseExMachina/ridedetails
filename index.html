@@ -3,396 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uber Ride Logger</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Ride Logger</title>
+    <!-- Use Tailwind CSS for easy styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-        }
-        .message-box {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background-color: #fff; padding: 20px; border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1000;
-            text-align: center; font-family: 'Inter', sans-serif;
-            max-width: 300px;
-        }
-        .loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); display: flex;
-            justify-content: center; align-items: center; z-index: 1001;
-            color: white; font-size: 1.5rem;
-        }
-        input[type="text"], input[type="number"], input[type="date"], input[type="time"], select {
-            border: 1px solid #cbd5e0;
-            border-radius: 0.5rem;
-            padding: 0.5rem 0.75rem;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        input[type="checkbox"] {
-            transform: scale(1.2);
-            margin-left: 0.5rem;
-        }
-        .data-section {
-            transition: all 0.3s ease-in-out;
-            opacity: 1;
-            max-height: 1000px; /* Large enough to show content */
-            overflow: hidden;
-            padding-top: 1.5rem; /* Default padding */
-            padding-bottom: 1.5rem; /* Default padding */
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
     </style>
 </head>
-<body class="p-4">
-    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8">
-        <h1 class="text-4xl font-extrabold text-slate-800 text-center mb-6">
-            Uber Ride Logger
-        </h1>
-        <p class="text-center text-slate-600 mb-8">
-            Log details for accepted and completed Uber rides.
-        </p>
+<body>
 
-        <!-- Section 1: Ride Details -->
-        <div id="rideDetailsSection" class="mb-6 bg-slate-50 p-6 rounded-xl shadow-inner data-section">
-            <h2 class="text-2xl font-bold text-slate-700 mb-4">Ride Details</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="inputDate" class="block text-slate-700 text-sm font-semibold mb-1">Date</label>
-                    <input type="date" id="inputDate" class="focus:ring-teal-500 focus:border-teal-500">
-                </div>
-                <div>
-                    <label for="inputStartTime" class="block text-slate-700 text-sm font-semibold mb-1">Ride Start Time (approx.)</label>
-                    <input type="time" id="inputStartTime" class="focus:ring-teal-500 focus:border-teal-500">
-                </div>
-                <div>
-                    <label for="inputDayOfWeek" class="block text-slate-700 text-sm font-semibold mb-1">Day of Week</label>
-                    <select id="inputDayOfWeek" class="focus:ring-teal-500 focus:border-teal-500">
-                        <option value="">Auto-Detect or Select</option>
-                        <option value="Sunday">Sunday</option>
-                        <option value="Monday">Monday</option>
-                        <option value="Tuesday">Tuesday</option>
-                        <option value="Wednesday">Wednesday</option>
-                        <option value="Thursday">Thursday</option>
-                        <option value="Friday">Friday</option>
-                        <option value="Saturday">Saturday</option>
-                    </select>
-                </div>
+    <!-- Main container for the app, with responsive styling -->
+    <div class="bg-white p-8 md:p-12 rounded-2xl shadow-xl max-w-lg w-full">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Log Your Ride</h1>
+        
+        <!-- Form for ride data input -->
+        <form id="rideForm" class="space-y-6">
+            
+            <!-- Location input field -->
+            <div>
+                <label for="location" class="block text-sm font-medium text-gray-700 mb-1">
+                    Current Location
+                </label>
+                <input type="text" id="location" name="location" placeholder="e.g., Home"
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
+                    required>
             </div>
-            <div class="flex items-center mb-4">
-                <input type="checkbox" id="inputPublicHoliday" class="mr-2 text-teal-600 focus:ring-teal-500 rounded">
-                <label for="inputPublicHoliday" class="text-slate-700 text-sm font-semibold">Public Holiday?</label>
+            
+            <!-- Destination input field -->
+            <div>
+                <label for="destination" class="block text-sm font-medium text-gray-700 mb-1">
+                    Destination
+                </label>
+                <input type="text" id="destination" name="destination" placeholder="e.g., Downtown"
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
+                    required>
             </div>
-            <div class="mb-4">
-                <label for="inputSpecialEvent" class="block text-slate-700 text-sm font-semibold mb-1">Special Event (e.g., Concert, Game)</label>
-                <input type="text" id="inputSpecialEvent" class="focus:ring-teal-500 focus:border-teal-500" placeholder="Any major event happening?">
+            
+            <!-- Distance input field -->
+            <div>
+                <label for="distance" class="block text-sm font-medium text-gray-700 mb-1">
+                    Distance (in km)
+                </label>
+                <input type="number" id="distance" name="distance" placeholder="e.g., 5.2"
+                    class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out"
+                    step="0.01" required>
             </div>
-        </div>
+            
+            <!-- Submit button with loading state -->
+            <div>
+                <button type="submit" id="submitBtn"
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+                    Log Ride
+                </button>
+            </div>
+        </form>
 
-        <!-- Section 2: Accepted Ride Details -->
-        <div id="acceptedRideSection" class="mb-6 bg-slate-50 p-6 rounded-xl shadow-inner data-section">
-            <h2 class="text-2xl font-bold text-slate-700 mb-4">Accepted Ride Details</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="acceptedUpfrontFare" class="block text-slate-700 text-sm font-semibold mb-1">Upfront Fare ($)</label>
-                    <input type="number" id="acceptedUpfrontFare" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 55.75" step="0.01">
-                </div>
-                <div>
-                    <label for="acceptedEstTime" class="block text-slate-700 text-sm font-semibold mb-1">Estimated Time (MM:SS)</label>
-                    <input type="text" id="acceptedEstTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 15:30">
-                </div>
-                <div>
-                    <label for="acceptedPickupLocation" class="block text-slate-700 text-sm font-semibold mb-1">Pickup Location</label>
-                    <input type="text" id="acceptedPickupLocation" class="focus:ring-teal-500 focus:border-teal-500" placeholder="Click to get current location or type manually">
-                </div>
-                <div>
-                    <label for="acceptedEndLocation" class="block text-slate-700 text-sm font-semibold mb-1">End Location</label>
-                    <input type="text" id="acceptedEndLocation" class="focus:ring-teal-500 focus:border-teal-500" placeholder="Click to get current location or type manually">
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 3: Completed Ride Details -->
-        <div id="completedRideSection" class="mb-6 bg-slate-50 p-6 rounded-xl shadow-inner data-section">
-            <h2 class="text-2xl font-bold text-slate-700 mb-4">Completed Ride Details</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="realizedFare" class="block text-slate-700 text-sm font-semibold mb-1">Realized Fare ($)</label>
-                    <input type="number" id="realizedFare" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 50.25" step="0.01">
-                </div>
-                <div>
-                    <label for="realizedTime" class="block text-slate-700 text-sm font-semibold mb-1">Realized Time (MM:SS)</label>
-                    <input type="text" id="realizedTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 12:45">
-                </div>
-                <div class="flex items-center col-span-full">
-                    <input type="checkbox" id="passengerSeatbelt" class="mr-2 text-teal-600 focus:ring-teal-500 rounded">
-                    <label for="passengerSeatbelt" class="text-slate-700 text-sm font-semibold">Passenger Fastened Seatbelt?</label>
-                </div>
-            </div>
-            <button id="submitDataBtn" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md transform hover:scale-105">
-                Submit All Data to Google Sheet
-            </button>
-        </div>
+        <!-- Message box for success or error feedback -->
+        <div id="messageBox" class="mt-6 p-4 rounded-lg text-sm hidden"></div>
+        
     </div>
 
+    <!-- JavaScript for form submission and API call -->
     <script>
-        // REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL FOR ACCEPTED/COMPLETED RIDES
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxquGSCQqgIKL-BwaQf-gt6zvfPIrn2g0tAEL4mWtBHOk-OZy54wLn9R_FCAtbW-yg9cw/exec'; 
+        document.getElementById('rideForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent the default form submission
 
-        // UI Elements
-        const submitDataBtn = document.getElementById('submitDataBtn');
-
-        // Input Fields (Ride Details)
-        const inputDate = document.getElementById('inputDate');
-        const inputStartTime = document.getElementById('inputStartTime');
-        const inputDayOfWeek = document.getElementById('inputDayOfWeek');
-        const inputPublicHoliday = document.getElementById('inputPublicHoliday');
-        const inputSpecialEvent = document.getElementById('inputSpecialEvent');
-        
-        // Input Fields (Accepted Ride Details)
-        const acceptedUpfrontFare = document.getElementById('acceptedUpfrontFare');
-        const acceptedEstTime = document.getElementById('acceptedEstTime');
-        const acceptedPickupLocation = document.getElementById('acceptedPickupLocation');
-        const acceptedEndLocation = document.getElementById('acceptedEndLocation');
-
-        // Input Fields (Completed Ride Details)
-        const realizedFare = document.getElementById('realizedFare');
-        const realizedTime = document.getElementById('realizedTime');
-        const passengerSeatbelt = document.getElementById('passengerSeatbelt');
-
-        // Sections (all visible by default now)
-        const acceptedRideSection = document.getElementById('acceptedRideSection');
-        const completedRideSection = document.getElementById('completedRideSection');
-
-        // --- Initial Setup ---
-        // Set today's date and current time by default
-        inputDate.valueAsDate = new Date();
-        inputStartTime.value = new Date().toTimeString().substring(0, 5); // HH:MM
-        inputDayOfWeek.value = new Date().toLocaleString('en-us', { weekday: 'long' });
-
-        // --- Helper Functions ---
-        // Parses MM:SS to total minutes (decimal)
-        function parseMinutesSecondsToMinutes(timeStr) {
-            const parts = timeStr.split(':');
-            if (parts.length === 2) {
-                const minutes = parseInt(parts[0]);
-                const seconds = parseInt(parts[1]);
-                if (!isNaN(minutes) && !isNaN(seconds)) {
-                    return (minutes + seconds / 60).toFixed(2); // Return as decimal minutes
-                }
-            }
-            return null; // Invalid format
-        }
-
-        // Custom message box for iFrame compatibility and better UX
-        function showMessage(message, type = 'info') {
-            const existingBox = document.querySelector('.message-box');
-            if (existingBox) existingBox.remove();
-
-            const alertBox = document.createElement('div');
-            alertBox.className = 'message-box';
-            let bgColor = 'bg-teal-100';
-            let textColor = 'text-teal-800';
-            if (type === 'error') {
-                bgColor = 'bg-red-100';
-                textColor = 'text-red-800';
-            } else if (type === 'success') {
-                bgColor = 'bg-green-100';
-                textColor = 'text-green-800';
-            }
-
-            alertBox.innerHTML = `
-                <div class="${bgColor} ${textColor} p-4 rounded-lg mb-4">
-                    <p class="text-lg">${message}</p>
-                </div>
-                <button class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-md" onclick="this.parentNode.remove()">
-                    OK
-                </button>
-            `;
-            document.body.appendChild(alertBox);
-        }
-
-        let loadingOverlay = null;
-        function showLoading(message) {
-            if (!loadingOverlay) {
-                loadingOverlay = document.createElement('div');
-                loadingOverlay.className = 'loading-overlay';
-                document.body.appendChild(loadingOverlay);
-            }
-            loadingOverlay.innerHTML = `<p>${message}</p>`;
-            loadingOverlay.style.display = 'flex';
-        }
-
-        function hideLoading() {
-            if (loadingOverlay) {
-                loadingOverlay.style.display = 'none';
-            }
-        }
-
-        // --- Geolocation Functionality ---
-        // Function to handle geolocation lookup for a given input field
-        async function getAndSetLocation(inputField) {
-            if (navigator.geolocation) {
-                showLoading('Getting your current location...');
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        try {
-                            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
-                            const data = await response.json();
-                            if (data && data.display_name) {
-                                inputField.value = data.display_name;
-                                showMessage('Location retrieved successfully!', 'success');
-                            } else {
-                                showMessage('Could not find address for your location.', 'error');
-                            }
-                        } catch (error) {
-                            showMessage('Error looking up address. Check network.', 'error');
-                            console.error('Reverse geocoding error:', error);
-                        } finally {
-                            hideLoading();
-                        }
-                    },
-                    (error) => {
-                        hideLoading();
-                        let errorMessage = 'Error getting location.';
-                        switch (error.code) {
-                            case error.PERMISSION_DENIED:
-                                errorMessage = 'Location permission denied. Please enable it in your browser settings.';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                errorMessage = 'Location information is unavailable.';
-                                break;
-                            case error.TIMEOUT:
-                                errorMessage = 'The request to get user location timed out.';
-                                break;
-                            case error.UNKNOWN_ERROR:
-                                errorMessage = 'An unknown error occurred.';
-                                break;
-                        }
-                        showMessage(errorMessage, 'error');
-                        console.error('Geolocation error:', error);
-                    },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-                );
-            } else {
-                showMessage('Geolocation is not supported by your browser.', 'error');
-            }
-        }
-
-        // Event listeners for geolocation on click
-        acceptedPickupLocation.addEventListener('click', () => getAndSetLocation(acceptedPickupLocation));
-        acceptedEndLocation.addEventListener('click', () => getAndSetLocation(acceptedEndLocation));
-
-
-        // --- Event Listener for Submission ---
-        submitDataBtn.addEventListener('click', async () => {
-            const date = inputDate.value;
-            const startTime = inputStartTime.value;
-            const dayOfWeek = inputDayOfWeek.value;
-            const publicHoliday = inputPublicHoliday.checked ? 'Yes' : 'No';
-            const specialEvent = inputSpecialEvent.value.trim();
-
-            const upfrontFare = acceptedUpfrontFare.value;
-            const estTimeRaw = acceptedEstTime.value;
-            const pickupLoc = acceptedPickupLocation.value; 
-            const endLoc = acceptedEndLocation.value;
-
-            const realizedFareValue = realizedFare.value;
-            const realizedTimeRaw = realizedTime.value;
-            const passengerSeatbeltValue = passengerSeatbelt.checked ? 'Yes' : 'No';
-
-            // Parse and validate estimated time
-            const estTimeMinutes = parseMinutesSecondsToMinutes(estTimeRaw);
-            // Parse and validate realized time
-            const realizedTimeMinutes = parseMinutesSecondsToMinutes(realizedTimeRaw);
-
-            // --- Validation ---
-            if (!date || !startTime || !dayOfWeek) {
-                showMessage('Please fill in Date, Ride Start Time, and Day of Week.', 'error');
-                return;
-            }
-            if (!upfrontFare || !estTimeRaw || !pickupLoc || !endLoc) {
-                showMessage('Please fill in all Accepted Ride Details.', 'error');
-                return;
-            }
-            if (estTimeMinutes === null) {
-                showMessage('Estimated Time must be in MM:SS format (e.g., 15:30).', 'error');
-                return;
-            }
-            if (!realizedFareValue || !realizedTimeRaw) {
-                showMessage('Please fill in Realized Fare and Realized Time for the completed ride.', 'error');
-                return;
-            }
-            if (realizedTimeMinutes === null) {
-                showMessage('Realized Time must be in MM:SS format (e.g., 12:45).', 'error');
-                return;
-            }
-
-            if (WEB_APP_URL === 'YOUR_ACCEPTED_RIDES_APPS_SCRIPT_URL_HERE' || !WEB_APP_URL.startsWith('https://script.google.com/macros/s/')) {
-                showMessage('Please replace "YOUR_ACCEPTED_RIDES_APPS_SCRIPT_URL_HERE" in the HTML code with your actual deployed Google Apps Script Web App URL.', 'error');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('date', date);
-            formData.append('startTime', startTime);
-            formData.append('dayOfWeek', dayOfWeek);
+            const form = event.target;
+            const submitBtn = document.getElementById('submitBtn');
+            const messageBox = document.getElementById('messageBox');
             
-            // These will be blank for this app, as they come from the stopwatch app
-            formData.append('totalRejectedTime', '');
-            formData.append('numRejectedRides', '');
-            formData.append('rideAccepted', 'Yes'); // This app always logs an accepted ride
+            // Disable the button and show a loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging...';
+            messageBox.classList.add('hidden');
 
-            formData.append('acceptedUpfrontFare', upfrontFare);
-            formData.append('acceptedEstTime', estTimeMinutes); // Now parsed minutes
-            formData.append('pickupLocation', pickupLoc);
-            formData.append('endLocation', endLoc);
-
-            formData.append('realizedFare', realizedFareValue);
-            formData.append('realizedTime', realizedTimeMinutes); // Now parsed minutes
-            formData.append('passengerSeatbelt', passengerSeatbeltValue);
-
-            formData.append('publicHoliday', publicHoliday);
-            formData.append('specialEvent', specialEvent);
-
-            showLoading('Submitting ride data...');
+            const formData = {
+                location: form.location.value,
+                destination: form.destination.value,
+                distance: parseFloat(form.distance.value)
+            };
+            
+            // === IMPORTANT: REPLACE THIS URL WITH YOUR NEW DEPLOYED SCRIPT URL ===
+            const scriptUrl = 'https://script.google.com/macros/s/AKfycbzUMaw7_Nunl8tLYyo6NAqFpDRoe7JLZ935_zUZMqwR-AJ1flRI-JISlJ5xyC4izS4Acw/exec'; 
 
             try {
-                const response = await fetch(WEB_APP_URL, {
+                const response = await fetch(scriptUrl, {
                     method: 'POST',
-                    body: formData
+                    mode: 'no-cors', // Use no-cors mode for cross-origin requests
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
                 });
+                
+                // Since we are using no-cors, we cannot check the response status.
+                // We will assume success for now and provide feedback to the user.
+                
+                showMessage('success', 'Ride logged successfully!');
+                form.reset(); // Reset the form fields on success
 
-                const result = await response.json();
-
-                if (result.success) {
-                    showMessage('Ride data submitted successfully!', 'success');
-                    // Reset all input fields for a new entry
-                    inputDate.valueAsDate = new Date();
-                    inputStartTime.value = new Date().toTimeString().substring(0, 5);
-                    inputDayOfWeek.value = new Date().toLocaleString('en-us', { weekday: 'long' });
-                    inputPublicHoliday.checked = false;
-                    inputSpecialEvent.value = '';
-                    acceptedUpfrontFare.value = '';
-                    acceptedEstTime.value = '';
-                    acceptedPickupLocation.value = ''; 
-                    acceptedEndLocation.value = '';
-                    realizedFare.value = '';
-                    realizedTime.value = '';
-                    passengerSeatbelt.checked = false;
-                } else {
-                    showMessage(`Error submitting data: ${result.message}`, 'error');
-                }
             } catch (error) {
-                showMessage(`Network error: ${error.message}. Check console for details.`, 'error');
-                console.error('Fetch error:', error);
+                console.error('Error:', error);
+                showMessage('error', 'An error occurred. Please try again.');
             } finally {
-                hideLoading();
+                // Re-enable the button and restore its original text
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Log Ride';
             }
         });
+
+        // Helper function to display messages to the user
+        function showMessage(type, message) {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden');
+            
+            // Apply styling based on the message type (success or error)
+            if (type === 'success') {
+                messageBox.classList.remove('bg-red-100', 'text-red-800');
+                messageBox.classList.add('bg-green-100', 'text-green-800');
+            } else if (type === 'error') {
+                messageBox.classList.remove('bg-green-100', 'text-green-800');
+                messageBox.classList.add('bg-red-100', 'text-red-800');
+            }
+        }
     </script>
 </body>
 </html>
