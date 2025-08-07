@@ -276,13 +276,12 @@
         currentPickupLocation.addEventListener('click', () => getAndSetLocation(currentPickupLocation));
         currentEndLocation.addEventListener('click', () => getAndSetLocation(currentEndLocation));
 
-        // --- Initial Setup and LocalStorage ---
+        // --- LocalStorage Logic ---
         function loadUpcomingRide() {
             const savedRide = JSON.parse(localStorage.getItem('upcomingRide'));
             if (savedRide) {
                 upcomingUpfrontFare.value = savedRide.upfrontFare || '';
                 upcomingEstTime.value = savedRide.estTime || '';
-                showMessage('An upcoming ride was loaded from your last session.', 'info');
             }
         }
 
@@ -292,19 +291,9 @@
             upcomingEstTime.value = '';
         }
 
-        function populateCurrentFromUpcoming() {
-            const savedRide = JSON.parse(localStorage.getItem('upcomingRide'));
-            if (savedRide) {
-                currentUpfrontFare.value = savedRide.upfrontFare || '';
-                currentEstTime.value = savedRide.estTime || '';
-                // Clear the upcoming ride data as it's been moved to the current ride section
-                clearUpcomingRide();
-            }
-        }
-
         function parseMinutesSecondsToMinutes(timeString) {
             const parts = timeString.split(':').map(part => parseInt(part, 10));
-            if (parts.length === 2) {
+            if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
                 const minutes = parts[0];
                 const seconds = parts[1];
                 return minutes + (seconds / 60);
@@ -312,6 +301,7 @@
             return null; // Return null for invalid format
         }
 
+        // --- Initial Setup and Event Listeners ---
         window.onload = () => {
             inputDate.valueAsDate = new Date();
             inputStartTime.value = new Date().toTimeString().substring(0, 5);
@@ -319,7 +309,6 @@
             loadUpcomingRide();
         };
 
-        // --- Event Listeners ---
         saveUpcomingRideBtn.addEventListener('click', () => {
             const upfrontFare = upcomingUpfrontFare.value;
             const estTime = upcomingEstTime.value;
@@ -408,7 +397,8 @@
 
                 if (result.success) {
                     showMessage('Ride data submitted successfully!', 'success');
-                    // Reset fields for a new entry
+                    
+                    // Reset current ride fields
                     currentUpfrontFare.value = '';
                     currentEstTime.value = '';
                     currentPickupLocation.value = '';
@@ -416,10 +406,17 @@
                     realizedFare.value = '';
                     realizedTime.value = '';
                     passengerSeatbelt.checked = false;
-                    
-                    // Move the upcoming ride data to the current ride section
-                    populateCurrentFromUpcoming();
 
+                    // Load upcoming ride details and move them to the current ride section
+                    const savedRide = JSON.parse(localStorage.getItem('upcomingRide'));
+                    if (savedRide) {
+                        currentUpfrontFare.value = savedRide.upfrontFare || '';
+                        currentEstTime.value = savedRide.estTime || '';
+                        // Clear the upcoming ride data as it's been moved
+                        clearUpcomingRide();
+                        showMessage('Upcoming ride details moved to current ride section.', 'info');
+                    }
+                    
                 } else {
                     showMessage(`Error submitting data: ${result.message}`, 'error');
                 }
