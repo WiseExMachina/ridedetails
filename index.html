@@ -99,8 +99,8 @@
                     <input type="number" id="currentUpfrontFare" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 55.75" step="0.01">
                 </div>
                 <div>
-                    <label for="currentEstTime" class="block text-slate-700 text-sm font-semibold mb-1">Estimated Time (MM:SS)</label>
-                    <input type="text" id="currentEstTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 15:30">
+                    <label for="currentEstTime" class="block text-slate-700 text-sm font-semibold mb-1">Estimated Time (minutes)</label>
+                    <input type="number" id="currentEstTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 15" step="1">
                 </div>
                 <div>
                     <label for="currentPickupLocation" class="block text-slate-700 text-sm font-semibold mb-1">Pickup Location</label>
@@ -118,7 +118,7 @@
                 </div>
                 <div>
                     <label for="realizedTime" class="block text-slate-700 text-sm font-semibold mb-1">Realized Time (MM:SS)</label>
-                    <input type="text" id="realizedTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 12:45">
+                    <input type="text" id="realizedTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 12:30">
                 </div>
                 <div class="flex items-center col-span-full">
                     <input type="checkbox" id="passengerSeatbelt" class="mr-2 text-teal-600 focus:ring-teal-500 rounded">
@@ -139,16 +139,8 @@
                     <input type="number" id="upcomingUpfrontFare" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 55.75" step="0.01">
                 </div>
                 <div>
-                    <label for="upcomingEstTime" class="block text-slate-700 text-sm font-semibold mb-1">Estimated Time (MM:SS)</label>
-                    <input type="text" id="upcomingEstTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 15:30">
-                </div>
-                <div>
-                    <label for="upcomingPickupLocation" class="block text-slate-700 text-sm font-semibold mb-1">Pickup Location</label>
-                    <input type="text" id="upcomingPickupLocation" class="focus:ring-teal-500 focus:border-teal-500" placeholder="Click to get current location or type manually">
-                </div>
-                <div>
-                    <label for="upcomingEndLocation" class="block text-slate-700 text-sm font-semibold mb-1">End Location</label>
-                    <input type="text" id="upcomingEndLocation" class="focus:ring-teal-500 focus:border-teal-500" placeholder="Click to get current location or type manually">
+                    <label for="upcomingEstTime" class="block text-slate-700 text-sm font-semibold mb-1">Estimated Time (minutes)</label>
+                    <input type="number" id="upcomingEstTime" class="focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 15" step="1">
                 </div>
             </div>
             <button id="saveUpcomingRideBtn" class="w-full bg-slate-400 hover:bg-slate-500 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-md transform hover:scale-105">
@@ -161,7 +153,7 @@
         // =========================================================================
         // === IMPORTANT: PASTE YOUR NEW GOOGLE APPS SCRIPT URL HERE ===================
         // =========================================================================
-        const WEB_APP_URL = 'YOUR_NEW_DEPLOYED_GOOGLE_APPS_SCRIPT_URL_HERE'; 
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxiMN4rNG3aSRvw4WoOSxXpA7W8x0BS8jmPGYm0ZD_mVWBSXBHFlvQYnHJvBCjh_X3WRQ/exec';
 
         // --- UI Elements ---
         // General Ride Details
@@ -184,23 +176,9 @@
         // Upcoming Ride Details
         const upcomingUpfrontFare = document.getElementById('upcomingUpfrontFare');
         const upcomingEstTime = document.getElementById('upcomingEstTime');
-        const upcomingPickupLocation = document.getElementById('upcomingPickupLocation');
-        const upcomingEndLocation = document.getElementById('upcomingEndLocation');
         const saveUpcomingRideBtn = document.getElementById('saveUpcomingRideBtn');
         
         // --- Helper Functions ---
-        function parseMinutesSecondsToMinutes(timeStr) {
-            const parts = timeStr.split(':');
-            if (parts.length === 2) {
-                const minutes = parseInt(parts[0]);
-                const seconds = parseInt(parts[1]);
-                if (!isNaN(minutes) && !isNaN(seconds)) {
-                    return (minutes + seconds / 60).toFixed(2);
-                }
-            }
-            return null;
-        }
-        
         function showMessage(message, type = 'info') {
             const existingBox = document.querySelector('.message-box');
             if (existingBox) existingBox.remove();
@@ -297,8 +275,6 @@
         // Event listeners for geolocation
         currentPickupLocation.addEventListener('click', () => getAndSetLocation(currentPickupLocation));
         currentEndLocation.addEventListener('click', () => getAndSetLocation(currentEndLocation));
-        upcomingPickupLocation.addEventListener('click', () => getAndSetLocation(upcomingPickupLocation));
-        upcomingEndLocation.addEventListener('click', () => getAndSetLocation(upcomingEndLocation));
 
         // --- Initial Setup and LocalStorage ---
         function loadUpcomingRide() {
@@ -306,8 +282,6 @@
             if (savedRide) {
                 upcomingUpfrontFare.value = savedRide.upfrontFare || '';
                 upcomingEstTime.value = savedRide.estTime || '';
-                upcomingPickupLocation.value = savedRide.pickupLocation || '';
-                upcomingEndLocation.value = savedRide.endLocation || '';
                 showMessage('An upcoming ride was loaded from your last session.', 'info');
             }
         }
@@ -316,8 +290,6 @@
             localStorage.removeItem('upcomingRide');
             upcomingUpfrontFare.value = '';
             upcomingEstTime.value = '';
-            upcomingPickupLocation.value = '';
-            upcomingEndLocation.value = '';
         }
 
         function populateCurrentFromUpcoming() {
@@ -325,10 +297,19 @@
             if (savedRide) {
                 currentUpfrontFare.value = savedRide.upfrontFare || '';
                 currentEstTime.value = savedRide.estTime || '';
-                currentPickupLocation.value = savedRide.pickupLocation || '';
-                currentEndLocation.value = savedRide.endLocation || '';
+                // Clear the upcoming ride data as it's been moved to the current ride section
                 clearUpcomingRide();
             }
+        }
+
+        function parseMinutesSecondsToMinutes(timeString) {
+            const parts = timeString.split(':').map(part => parseInt(part, 10));
+            if (parts.length === 2) {
+                const minutes = parts[0];
+                const seconds = parts[1];
+                return minutes + (seconds / 60);
+            }
+            return null; // Return null for invalid format
         }
 
         window.onload = () => {
@@ -341,25 +322,17 @@
         // --- Event Listeners ---
         saveUpcomingRideBtn.addEventListener('click', () => {
             const upfrontFare = upcomingUpfrontFare.value;
-            const estTimeRaw = upcomingEstTime.value;
-            const pickupLoc = upcomingPickupLocation.value;
-            const endLoc = upcomingEndLocation.value;
+            const estTime = upcomingEstTime.value;
 
             // Simple validation for upcoming ride
-            if (!upfrontFare || !estTimeRaw || !pickupLoc || !endLoc) {
-                showMessage('Please fill in all Upcoming Ride Details.', 'error');
-                return;
-            }
-            if (parseMinutesSecondsToMinutes(estTimeRaw) === null) {
-                showMessage('Upcoming Estimated Time must be in MM:SS format (e.g., 15:30).', 'error');
+            if (!upfrontFare || !estTime) {
+                showMessage('Please fill in both Upfront Fare and Estimated Time for the upcoming ride.', 'error');
                 return;
             }
 
             const upcomingRideData = {
                 upfrontFare,
-                estTime: estTimeRaw,
-                pickupLocation: pickupLoc,
-                endLocation: endLoc
+                estTime
             };
 
             localStorage.setItem('upcomingRide', JSON.stringify(upcomingRideData));
@@ -374,12 +347,12 @@
             const specialEvent = inputSpecialEvent.value.trim();
 
             const upfrontFare = currentUpfrontFare.value;
-            const estTimeRaw = currentEstTime.value;
+            const estTime = currentEstTime.value;
             const pickupLoc = currentPickupLocation.value;
             const endLoc = currentEndLocation.value;
 
             const realizedFareValue = realizedFare.value;
-            const realizedTimeRaw = realizedTime.value;
+            const realizedTimeString = realizedTime.value;
             const passengerSeatbeltValue = passengerSeatbelt.checked ? 'Yes' : 'No';
 
             // --- Validation ---
@@ -387,26 +360,22 @@
                 showMessage('Please fill in Date, Ride Start Time, and Day of Week.', 'error');
                 return;
             }
-            if (!upfrontFare || !estTimeRaw || !pickupLoc || !endLoc) {
+            if (!upfrontFare || !estTime || !pickupLoc || !endLoc) {
                 showMessage('Please fill in all Current Ride Details.', 'error');
                 return;
             }
-            const estTimeMinutes = parseMinutesSecondsToMinutes(estTimeRaw);
-            if (estTimeMinutes === null) {
-                showMessage('Estimated Time must be in MM:SS format (e.g., 15:30).', 'error');
-                return;
-            }
-            if (!realizedFareValue || !realizedTimeRaw) {
+            if (!realizedFareValue || !realizedTimeString) {
                 showMessage('Please fill in Realized Fare and Realized Time for the completed ride.', 'error');
                 return;
             }
-            const realizedTimeMinutes = parseMinutesSecondsToMinutes(realizedTimeRaw);
-            if (realizedTimeMinutes === null) {
-                showMessage('Realized Time must be in MM:SS format (e.g., 12:45).', 'error');
+            
+            const convertedRealizedTime = parseMinutesSecondsToMinutes(realizedTimeString);
+            if (convertedRealizedTime === null) {
+                showMessage('Please enter Realized Time in MM:SS format (e.g., 12:30).', 'error');
                 return;
             }
-            
-            if (WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxiMN4rNG3aSRvw4WoOSxXpA7W8x0BS8jmPGYm0ZD_mVWBSXBHFlvQYnHJvBCjh_X3WRQ/exec') {
+
+            if (WEB_APP_URL === 'YOUR_NEW_DEPLOYED_GOOGLE_APPS_SCRIPT_URL_HERE') {
                 showMessage('Please update the WEB_APP_URL in the code with your new URL.', 'error');
                 return;
             }
@@ -419,12 +388,12 @@
             formData.append('specialEvent', specialEvent);
 
             formData.append('acceptedUpfrontFare', upfrontFare);
-            formData.append('acceptedEstTime', estTimeMinutes);
+            formData.append('acceptedEstTime', estTime);
             formData.append('pickupLocation', pickupLoc);
             formData.append('endLocation', endLoc);
 
             formData.append('realizedFare', realizedFareValue);
-            formData.append('realizedTime', realizedTimeMinutes);
+            formData.append('realizedTime', convertedRealizedTime);
             formData.append('passengerSeatbelt', passengerSeatbeltValue);
 
             showLoading('Submitting ride data...');
@@ -440,6 +409,10 @@
                 if (result.success) {
                     showMessage('Ride data submitted successfully!', 'success');
                     // Reset fields for a new entry
+                    currentUpfrontFare.value = '';
+                    currentEstTime.value = '';
+                    currentPickupLocation.value = '';
+                    currentEndLocation.value = '';
                     realizedFare.value = '';
                     realizedTime.value = '';
                     passengerSeatbelt.checked = false;
